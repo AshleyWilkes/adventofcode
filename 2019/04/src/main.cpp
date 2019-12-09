@@ -24,8 +24,8 @@ bool neverDecreases( Digits digits ) {
 }
 
 bool has2AdjacentSameDigits( Digits digits ) {
-  for ( int i = 0; i < numDigits; ++i ) {
-    if ( digits[i+1] == digits[i]) {
+  for ( int i = 0; i < numDigits - 1; ++i ) {
+    if ( digits[i+1] == digits[i] ) {
       return true;
     }
   }
