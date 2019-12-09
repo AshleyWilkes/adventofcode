@@ -32,9 +32,26 @@ bool has2AdjacentSameDigits( Digits digits ) {
   return false;
 }
 
+bool hasExactly2AdjacentSameDigits( Digits digits ) {
+  int curAdjacentCount = 1, curDigit = digits[0], i = 0;
+  while ( ++i < numDigits ) {
+    if ( digits[i] == curDigit ) {
+      ++curAdjacentCount;
+    } else {
+      if ( curAdjacentCount == 2 ) {
+        return true;
+      } else {
+        curAdjacentCount = 1;
+        curDigit = digits[i];
+      }
+    }
+  }
+  return curAdjacentCount == 2;
+}
+
 bool passesRules( int i ) {
   Digits digits = parseDigits( i );
-  return neverDecreases( digits ) && has2AdjacentSameDigits( digits );
+  return neverDecreases( digits ) && hasExactly2AdjacentSameDigits( digits );
 }
 
 int main() {
