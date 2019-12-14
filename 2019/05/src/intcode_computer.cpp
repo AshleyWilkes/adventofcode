@@ -8,7 +8,6 @@ IntcodeComputer::runTheProgram() {
     int instructionInputValue = read( position );
     auto instruction = createInstruction( instructionInputValue );
     halted = instruction->perform( this, position );
-    position += instruction->totalPositionsCount();
   }
 }
 
@@ -20,13 +19,17 @@ IntcodeComputer::createInstruction( int instructionInputValue ) const {
     case ( 2 ) : return std::make_unique<MultiplyInstruction>(); break;
     case ( 3 ) : return std::make_unique<InputInstruction>(); break;
     case ( 4 ) : return std::make_unique<OutputInstruction>(); break;
+    case ( 5 ) : return std::make_unique<JumpIfTrueInstruction>(); break;
+    case ( 6 ) : return std::make_unique<JumpIfFalseInstruction>(); break;
+    case ( 7 ) : return std::make_unique<LessThanInstruction>(); break;
+    case ( 8 ) : return std::make_unique<EqualsInstruction>(); break;
     case ( 99 ) : return std::make_unique<HaltInstruction>(); break;
     default: throw "unknown opCode";
   }
 }
 
 bool
-Instruction::perform( IntcodeComputer* computer, int position ) const {
+Instruction::perform( IntcodeComputer* computer, int& position ) const {
   //check consistency, read modes
   int instructionInputValue = computer->read( position );
   int opCode = instructionInputValue % 100;
@@ -52,5 +55,6 @@ Instruction::perform( IntcodeComputer* computer, int position ) const {
     int outputPosition = computer->read( position + inputParamsCount() + 1 );
     computer->write( outputPosition, result );
   }
+  position = getNewPosition( position );
   return halts();
 };

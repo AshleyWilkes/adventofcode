@@ -23,5 +23,6 @@ int main( int argc, char* argv[] ) {
   }
 
   IntcodeComputer comp{ theProgram };
+  comp.setInput( 5 );
   comp.runTheProgram();
 }
