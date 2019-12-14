@@ -18,4 +18,5 @@ int main( int argc, char* argv[] ) {
   OrbitMap orbitMap{ inputStream };
   orbitMap.countDistances();
   std::cout << orbitMap.totalOrbitsCount() << '\n';
+  std::cout << orbitMap.getMinimalOrbitTransfers( "SAN", "YOU" ) - 2 << '\n';
 }
