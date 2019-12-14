@@ -18,8 +18,8 @@ IntcodeComputer::createInstruction( int instructionInputValue ) const {
   switch ( opCode ) {
     case ( 1 ) : return std::make_unique<AddInstruction>(); break;
     case ( 2 ) : return std::make_unique<MultiplyInstruction>(); break;
-    //case ( 3 ) : return std::make_unique<InputInstruction>(); break;
-    //case ( 4 ) : return std::make_unique<OutputInstruction>(); break;
+    case ( 3 ) : return std::make_unique<InputInstruction>(); break;
+    case ( 4 ) : return std::make_unique<OutputInstruction>(); break;
     case ( 99 ) : return std::make_unique<HaltInstruction>(); break;
     default: throw "unknown opCode";
   }
@@ -37,6 +37,7 @@ Instruction::perform( IntcodeComputer* computer, int position ) const {
   std::vector<int> params;
   for ( int i = 0; i < inputParamsCount(); ++i ) {
     int curModeValue = modesValue % 10;
+    modesValue = modesValue / 10;
     int paramPositionValue = computer->read( position + i + 1 );
     if ( curModeValue == 0 ) {
       params.push_back( computer->read( paramPositionValue ) );
@@ -46,7 +47,7 @@ Instruction::perform( IntcodeComputer* computer, int position ) const {
   }
 
   //count and possibly write the instruction result
-  int result = countTheResult( params );
+  int result = countTheResult( computer, params );
   if ( hasOutput() ) {
     int outputPosition = computer->read( position + inputParamsCount() + 1 );
     computer->write( outputPosition, result );

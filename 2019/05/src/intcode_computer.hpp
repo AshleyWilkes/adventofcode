@@ -1,5 +1,6 @@
 #pragma once
 #include<memory>
+#include<iostream>
 #include<vector>
 
 using Program = std::vector<int>;
@@ -14,8 +15,12 @@ class IntcodeComputer {
     int read( int position ) { return program_.at( position ); }
     void write( int position, int value ) { program_.at( position ) = value; }
     std::unique_ptr<Instruction> createInstruction( int position ) const;
+    int getInput() const { return 1; }
+    void writeOutput( int output ) const { std::cout << output << '\n'; output_ = output; }
+    int getOutput() const { return output_; }
   private:
     std::vector<int> program_;
+    mutable int output_;
 };
 
 class Instruction {
@@ -28,7 +33,7 @@ class Instruction {
     virtual bool halts() const = 0;
     virtual int inputParamsCount() const = 0;
     virtual bool hasOutput() const = 0;
-    virtual int countTheResult( const std::vector<int>& params ) const = 0;
+    virtual int countTheResult( IntcodeComputer const *computer, const std::vector<int>& params ) const = 0;
 };
 
 class AddInstruction : public Instruction {
@@ -37,7 +42,7 @@ class AddInstruction : public Instruction {
     bool halts() const override { return false; }
     int inputParamsCount() const override { return 2; }
     bool hasOutput() const override { return true; }
-    int countTheResult( const std::vector<int>& params ) const {
+    int countTheResult( IntcodeComputer const *, const std::vector<int>& params ) const {
       return params.at( 0 ) + params.at( 1 );
     }
 };
@@ -48,8 +53,31 @@ class MultiplyInstruction : public Instruction {
     bool halts() const override { return false; }
     int inputParamsCount() const override { return 2; }
     bool hasOutput() const override { return true; }
-    int countTheResult( const std::vector<int>& params ) const {
+    int countTheResult( IntcodeComputer const *, const std::vector<int>& params ) const {
       return params.at( 0 ) * params.at( 1 );
+    }
+};
+
+class InputInstruction : public Instruction {
+  public:
+    int opCodeOfThis() const override { return 3; }
+    bool halts() const override { return false; }
+    int inputParamsCount() const override { return 0; }
+    bool hasOutput() const override { return true; }
+    int countTheResult( IntcodeComputer const *computer, const std::vector<int>& ) const {
+      return computer->getInput();
+    }
+};
+
+class OutputInstruction : public Instruction {
+  public:
+    int opCodeOfThis() const override { return 4; }
+    bool halts() const override { return false; }
+    int inputParamsCount() const override { return 1; }
+    bool hasOutput() const override { return false; }
+    int countTheResult( IntcodeComputer const *computer, const std::vector<int>& params ) const {
+      computer->writeOutput( params.at( 0 ) );
+      return -1;
     }
 };
 
@@ -59,7 +87,7 @@ class HaltInstruction : public Instruction {
     bool halts() const override { return true; }
     int inputParamsCount() const override { return 0; }
     bool hasOutput() const override { return false; }
-    int countTheResult( const std::vector<int>& /*params*/ ) const {
+    int countTheResult( IntcodeComputer const *, const std::vector<int>& ) const {
       return -1;
     }
 };
