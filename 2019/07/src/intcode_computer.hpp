@@ -1,6 +1,7 @@
 #pragma once
 #include<memory>
 #include<iostream>
+#include<memory>
 #include<queue>
 #include<vector>
 
@@ -10,26 +11,39 @@ class Instruction;
 
 class IntcodeComputer {
   public:
+    friend class Instruction;
+    enum class Status { Created, Running, Suspended, Halted };
     IntcodeComputer( const Program& program ) : program_{ program } {}
+    void setStatus( Status status ) { status_ = status; }
+    Status getStatus() const { return status_; }
     Program getProgram() const { return program_; }
-    void runTheProgram();
+    void start();
+    void resume();
     int read( int position ) { return program_.at( position ); }
     void write( int position, int value ) { program_.at( position ) = value; }
     std::unique_ptr<Instruction> createInstruction( int position ) const;
     void pushInput( int input ) { inputs_.push( input ); }
+    bool hasInput() const { return ! inputs_.empty(); }
     int popInput() { int result = inputs_.front(); inputs_.pop(); return result; }
-    void pushOutput( int output ) { outputs_.push( output ); }
+    void pushOutput( int output ); 
+    bool hasOutput() const { return ! outputs_.empty(); }
     int popOutput() { int result = outputs_.front(); outputs_.pop(); return result; }
     void printOutputs() { while ( ! outputs_.empty() ) std::cout << popOutput() << '\n'; }
+    void linkOutputToInputOf( IntcodeComputer *consumer ) { consumer_ = consumer; }
   private:
+    void run();
     std::vector<int> program_;
     std::queue<int> outputs_;
     std::queue<int> inputs_;
+    int position_{ 0 };
+    Status status_{ Status::Created };
+    IntcodeComputer *consumer_{ nullptr };
 };
 
 class Instruction {
   public:
-    bool perform( IntcodeComputer* computer, int& position ) const;
+    //no more bool, adjust computer's state directly
+    bool perform( IntcodeComputer* computer ) const;
     int outputParamsCount() const { return hasOutput() ? 1 : 0; }
     int totalPositionsCount() const { return inputParamsCount() + outputParamsCount() + 1; }
     virtual int getNewPosition( int position ) const { return position + totalPositionsCount(); }
@@ -70,8 +84,21 @@ class InputInstruction : public Instruction {
     int inputParamsCount() const override { return 0; }
     bool hasOutput() const override { return true; }
     int countTheResult( IntcodeComputer *computer, const std::vector<int>& ) const {
-      return computer->popInput();
+      if ( computer->hasInput() ) {
+        success = true;
+        computer->setStatus( IntcodeComputer::Status::Running );
+        return computer->popInput();
+      } else {
+        success = false;
+        computer->setStatus( IntcodeComputer::Status::Suspended );
+        return -1;
+      }
     }
+    int getNewPosition( int position ) const override {
+      return success ? Instruction::getNewPosition( position ) : position;
+    }
+  private:
+    mutable bool success{ false };
 };
 
 class OutputInstruction : public Instruction {
@@ -164,7 +191,8 @@ class HaltInstruction : public Instruction {
     bool halts() const override { return true; }
     int inputParamsCount() const override { return 0; }
     bool hasOutput() const override { return false; }
-    int countTheResult( IntcodeComputer *, const std::vector<int>& ) const {
+    int countTheResult( IntcodeComputer *computer, const std::vector<int>& ) const {
+      computer->setStatus( IntcodeComputer::Status::Halted );
       return -1;
     }
 };

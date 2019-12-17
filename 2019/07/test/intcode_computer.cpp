@@ -5,14 +5,14 @@ namespace {
 
 void testProgram( const Program& in, const std::vector<int>& out ) {
   IntcodeComputer comp{ in };
-  comp.runTheProgram();
+  comp.start();
   EXPECT_EQ( comp.getProgram(), out );
 }
 
 void testInputOutput( const Program& in, int input, int expectedOutput ) {
   IntcodeComputer comp{ in };
   comp.pushInput( input );
-  comp.runTheProgram();
+  comp.start();
   EXPECT_EQ( comp.popOutput(), expectedOutput );
 }
 

@@ -1,14 +1,15 @@
 #include "intcode_computer.hpp"
 
 void
-IntcodeComputer::runTheProgram() {
-  int position = 0;
-  bool halted = false;
-  while ( ! halted ) {
-    int instructionInputValue = read( position );
-    auto instruction = createInstruction( instructionInputValue );
-    halted = instruction->perform( this, position );
-  }
+IntcodeComputer::start() {
+  if ( status_ != Status::Created ) throw "run() called in non-Created state";
+  run();
+}
+
+void
+IntcodeComputer::resume() {
+  if ( status_ != Status::Suspended ) throw "resume() called in non-Suspended state";
+  run();
 }
 
 std::unique_ptr<Instruction>
@@ -28,10 +29,28 @@ IntcodeComputer::createInstruction( int instructionInputValue ) const {
   }
 }
 
+void IntcodeComputer::pushOutput( int output ) {
+  if ( consumer_ ) {
+    consumer_->pushInput( output );
+  } else {
+    outputs_.push( output );
+  }
+}
+
+void
+IntcodeComputer::run() {
+  status_ = Status::Running;
+  while ( status_ == Status::Running ) {
+    int instructionInputValue = read( position_ );
+    auto instruction = createInstruction( instructionInputValue );
+    instruction->perform( this );
+  }
+}
+
 bool
-Instruction::perform( IntcodeComputer* computer, int& position ) const {
+Instruction::perform( IntcodeComputer* computer ) const {
   //check consistency, read modes
-  int instructionInputValue = computer->read( position );
+  int instructionInputValue = computer->read( computer->position_ );
   int opCode = instructionInputValue % 100;
   if ( opCode != opCodeOfThis() ) throw "inconsistent opCodes";
   int modesValue = instructionInputValue / 100;
@@ -41,7 +60,7 @@ Instruction::perform( IntcodeComputer* computer, int& position ) const {
   for ( int i = 0; i < inputParamsCount(); ++i ) {
     int curModeValue = modesValue % 10;
     modesValue = modesValue / 10;
-    int paramPositionValue = computer->read( position + i + 1 );
+    int paramPositionValue = computer->read( computer->position_ + i + 1 );
     if ( curModeValue == 0 ) {
       params.push_back( computer->read( paramPositionValue ) );
     } else {
@@ -52,9 +71,9 @@ Instruction::perform( IntcodeComputer* computer, int& position ) const {
   //count and possibly write the instruction result
   int result = countTheResult( computer, params );
   if ( hasOutput() ) {
-    int outputPosition = computer->read( position + inputParamsCount() + 1 );
+    int outputPosition = computer->read( computer->position_ + inputParamsCount() + 1 );
     computer->write( outputPosition, result );
   }
-  position = getNewPosition( position );
+  computer->position_ = getNewPosition( computer->position_ );
   return halts();
 };

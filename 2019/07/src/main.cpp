@@ -22,5 +22,5 @@ int main( int argc, char* argv[] ) {
     theProgram.push_back( std::stoi( substr ) );
   }
 
-  std::cout << findMaxThrusterSignal( theProgram ) << '\n';
+  std::cout << findMaxThrusterSignalWithLoop( theProgram ) << '\n';
 }
