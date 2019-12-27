@@ -1,6 +1,11 @@
 #include "asteroids_map.hpp"
 #include <algorithm>
 
+//assignment specifies that first coordinate is column,
+//second is row; my design of InputableMap uses the
+//coordinates the other way around, which leads to
+//slight complications in several places, e.g. in this
+//push_back and in some comparisons.
 AsteroidsMap::AsteroidsMap( const InputableMap& map ) {
   for ( int row = 0; row < map.getRowsCount(); ++row ) {
     for ( int col = 0; col < map.getColsCount(); ++col ) {
