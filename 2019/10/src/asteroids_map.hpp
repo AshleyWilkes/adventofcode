@@ -14,11 +14,12 @@ class ObservatoryLocation {
 
 class AsteroidsMap {
   public:
-    AsteroidsMap( const InputableMap& map );
-    AsteroidsMap( std::istream& inputStream ) : AsteroidsMap( InputableMap( inputStream ) ) {}
+    AsteroidsMap( const InputableMap& map, std::vector<char> ignoredChars = { '.' } );
+    AsteroidsMap( std::istream& inputStream, std::vector<char> ignoredChars = { '.' } ) : AsteroidsMap( InputableMap( inputStream ), ignoredChars ) {}
     std::vector<Point> getAsteroids() const { return asteroids_; }
     int countLinesOfSightFrom( const Point& point ) const { return getLinesOfSightFrom( point ).size(); }
     std::vector<LineOfSight> getLinesOfSightFrom( const Point& point ) const;
+    std::vector<LineOfSight> getSortedLinesOfSightFrom( const Point& point ) const;
     ObservatoryLocation countBestObservatoryLocation() const;
   private:
     std::vector<Point> asteroids_;

@@ -1,7 +1,12 @@
 #include "asteroids_map.hpp"
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>
+
+void printATan2( float x, float y ) {
+  std::cout << "atan2(" << x << ", " << y << ") = " << atan2(x, y) << '\n';
+}
 
 int main( int argc, char* argv[] ) {
   if ( argc != 2 ) {
@@ -19,4 +24,12 @@ int main( int argc, char* argv[] ) {
   AsteroidsMap asteroidsMap{ inputStream };
   auto location = asteroidsMap.countBestObservatoryLocation();
   std::cout << location.count() << '\n';
+
+  auto lOSvector = asteroidsMap.getSortedLinesOfSightFrom( location.point() );
+  if ( lOSvector.size() < 200 ) {
+    std::cout << "!!!! there are less then 200 linesOfSight, more work is needed\n";
+  } else {
+    Point the200thAsteroid = unnormalize( lOSvector.at( 199 ).nearest(), location.point() );
+    std::cout << "The 200th asteroid is at [" << the200thAsteroid.first << ", " << the200thAsteroid.second << "]\n";
+  }
 }

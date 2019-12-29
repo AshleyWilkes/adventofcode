@@ -20,3 +20,13 @@ InputableMap::InputableMap( std::istream& inputStream ) {
   }
 }
 
+Point InputableMap::coordsOfFirst( char c ) const {
+  for ( int col = 0; col < getColsCount(); ++col ) {
+    for ( int row = 0; row < getRowsCount(); ++row ) {
+      if ( element( col, row ) == c ) {
+        return { col, row };
+      }
+    }
+  }
+  throw std::invalid_argument{ "not found" };
+}

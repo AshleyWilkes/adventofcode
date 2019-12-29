@@ -1,7 +1,7 @@
 #include "line_of_sight.hpp"
 
 LineOfSight::LineOfSight( const Point& point ) : nearest_{ point }, asteroids_{ point } {
-  if ( point.first == 0 && point.second == 0 ) throw std::invalid_argument{ "Can't construct line of sight from [0, 0]" };
+  if ( point == Point{ 0, 0 } ) throw std::invalid_argument{ "Can't construct line of sight from [0, 0]" };
 }
 
 bool LineOfSight::canContain( const Point& point ) const {
